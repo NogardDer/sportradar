@@ -4,18 +4,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.sportradar.football.Game;
+import org.sportradar.football.worldcup.model.Game;
 import org.sportradar.football.worldcup.exceptions.AlreadyExistsException;
 import org.sportradar.football.worldcup.exceptions.DoesNotExistsException;
 import org.sportradar.football.worldcup.exceptions.InvalidScoreException;
-import org.sportradar.football.worldcup.exceptions.InvalidTeamName;
+import org.sportradar.football.worldcup.exceptions.InvalidTeamNameException;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ScoreBoardTest {
     ScoreBoard scoreBoard;
@@ -26,16 +25,16 @@ public class ScoreBoardTest {
     }
 
     @Test
-    void testStartGame() throws AlreadyExistsException, InvalidTeamName {
-        String homeTeam = "homeTeam";
-        String awayTeam = "awayTeam";
+    void testStartGame() throws AlreadyExistsException, InvalidTeamNameException {
+        String homeTeam = "HomeTeam";
+        String awayTeam = "AwayTeam";
 
         scoreBoard.startGame(homeTeam, awayTeam);
 
         List<Game> result = scoreBoard.getSummaryOfTotalScoreGames();
 
         assertEquals(1, result.size());
-        assertEquals(new Game(homeTeam, awayTeam), result.get(1));
+        assertEquals(new Game(homeTeam, awayTeam, 0, 0), result.get(0));
     }
 
     static Stream<String> invalidTeamName() {
@@ -43,9 +42,9 @@ public class ScoreBoardTest {
     }
 
     @Test
-    void testStartGameAlreadyExists() throws AlreadyExistsException, InvalidTeamName {
-        String homeTeam = "homeTeam";
-        String awayTeam = "awayTeam";
+    void testStartGameAlreadyExists() throws AlreadyExistsException, InvalidTeamNameException {
+        String homeTeam = "HomeTeam";
+        String awayTeam = "AwayTeam";
         scoreBoard.startGame(homeTeam, awayTeam);
 
         AlreadyExistsException thrown = assertThrows(AlreadyExistsException.class, () ->
@@ -57,9 +56,9 @@ public class ScoreBoardTest {
     @ParameterizedTest
     @MethodSource("invalidTeamName")
     void testStartGameInvalidHomeTeamName(String homeTeam) {
-        String awayTeam = "awayTeam";
+        String awayTeam = "AwayTeam";
 
-        InvalidTeamName thrown = assertThrows(InvalidTeamName.class, () ->
+        InvalidTeamNameException thrown = assertThrows(InvalidTeamNameException.class, () ->
                 scoreBoard.startGame(homeTeam, awayTeam)
         );
         assertEquals(String.format("Team name:[%s] is not valid", homeTeam), thrown.getMessage());
@@ -68,18 +67,18 @@ public class ScoreBoardTest {
     @ParameterizedTest
     @MethodSource("invalidTeamName")
     void testStartGameInvalidAwayTeamName(String awayTeam) {
-        String homeTeam = "homeTeam";
+        String homeTeam = "HomeTeam";
 
-        InvalidTeamName thrown = assertThrows(InvalidTeamName.class, () ->
+        InvalidTeamNameException thrown = assertThrows(InvalidTeamNameException.class, () ->
                 scoreBoard.startGame(homeTeam, awayTeam)
         );
         assertEquals(String.format("Team name:[%s] is not valid", awayTeam), thrown.getMessage());
     }
 
     @Test
-    void testFinishGame() throws AlreadyExistsException, InvalidTeamName, DoesNotExistsException {
-        String homeTeam = "homeTeam";
-        String awayTeam = "awayTeam";
+    void testFinishGame() throws AlreadyExistsException, InvalidTeamNameException, DoesNotExistsException {
+        String homeTeam = "HomeTeam";
+        String awayTeam = "AwayTeam";
 
         scoreBoard.startGame(homeTeam, awayTeam);
         scoreBoard.finishGame(homeTeam, awayTeam);
@@ -91,8 +90,8 @@ public class ScoreBoardTest {
 
     @Test
     void testFinishGameGameDoesNotExist() {
-        String homeTeam = "homeTeam";
-        String awayTeam = "awayTeam";
+        String homeTeam = "HomeTeam";
+        String awayTeam = "AwayTeam";
 
         DoesNotExistsException thrown = assertThrows(DoesNotExistsException.class, () ->
                 scoreBoard.finishGame(homeTeam, awayTeam)
@@ -103,9 +102,9 @@ public class ScoreBoardTest {
     @ParameterizedTest
     @MethodSource("invalidTeamName")
     void testFinishGameInvalidHomeTeamName(String homeTeam) {
-        String awayTeam = "awayTeam";
+        String awayTeam = "AwayTeam";
 
-        InvalidTeamName thrown = assertThrows(InvalidTeamName.class, () ->
+        InvalidTeamNameException thrown = assertThrows(InvalidTeamNameException.class, () ->
                 scoreBoard.finishGame(homeTeam, awayTeam)
         );
         assertEquals(String.format("Team name:[%s] is not valid", homeTeam), thrown.getMessage());
@@ -114,18 +113,18 @@ public class ScoreBoardTest {
     @ParameterizedTest
     @MethodSource("invalidTeamName")
     void testFinishGameInvalidAwayTeamName(String awayTeam) {
-        String homeTeam = "homeTeam";
+        String homeTeam = "HomeTeam";
 
-        InvalidTeamName thrown = assertThrows(InvalidTeamName.class, () ->
+        InvalidTeamNameException thrown = assertThrows(InvalidTeamNameException.class, () ->
                 scoreBoard.finishGame(homeTeam, awayTeam)
         );
         assertEquals(String.format("Team name:[%s] is not valid", awayTeam), thrown.getMessage());
     }
 
     @Test
-    void testUpdateScore() throws AlreadyExistsException, InvalidTeamName, InvalidScoreException, DoesNotExistsException {
-        String homeTeam = "homeTeam";
-        String awayTeam = "awayTeam";
+    void testUpdateScore() throws AlreadyExistsException, InvalidTeamNameException, InvalidScoreException, DoesNotExistsException {
+        String homeTeam = "HomeTeam";
+        String awayTeam = "AwayTeam";
         int homeScore = 1;
         int awayScore = 2;
 
@@ -136,13 +135,13 @@ public class ScoreBoardTest {
 
         assertEquals(1, result.size());
         Game expectedGame = createGame(homeTeam, homeScore, awayTeam, awayScore);
-        assertEquals(expectedGame, result.get(1));
+        assertEquals(expectedGame, result.get(0));
     }
 
     @Test
     void testUpdateGameGameDoesNotExist() {
-        String homeTeam = "homeTeam";
-        String awayTeam = "awayTeam";
+        String homeTeam = "HomeTeam";
+        String awayTeam = "AwayTeam";
         int homeScore = 1;
         int awayScore = 2;
 
@@ -155,11 +154,11 @@ public class ScoreBoardTest {
     @ParameterizedTest
     @MethodSource("invalidTeamName")
     void testUpdateGameInvalidHomeTeamName(String homeTeam) {
-        String awayTeam = "awayTeam";
+        String awayTeam = "AwayTeam";
         int homeScore = 1;
         int awayScore = 2;
 
-        InvalidTeamName thrown = assertThrows(InvalidTeamName.class, () ->
+        InvalidTeamNameException thrown = assertThrows(InvalidTeamNameException.class, () ->
                 scoreBoard.updateScore(homeTeam, homeScore, awayTeam, awayScore)
         );
         assertEquals(String.format("Team name:[%s] is not valid", homeTeam), thrown.getMessage());
@@ -168,11 +167,11 @@ public class ScoreBoardTest {
     @ParameterizedTest
     @MethodSource("invalidTeamName")
     void testUpdateGameInvalidAwayTeamName(String awayTeam) {
-        String homeTeam = "homeTeam";
+        String homeTeam = "HomeTeam";
         int homeScore = 1;
         int awayScore = 2;
 
-        InvalidTeamName thrown = assertThrows(InvalidTeamName.class, () ->
+        InvalidTeamNameException thrown = assertThrows(InvalidTeamNameException.class, () ->
                 scoreBoard.updateScore(homeTeam, homeScore, awayTeam, awayScore)
         );
         assertEquals(String.format("Team name:[%s] is not valid", awayTeam), thrown.getMessage());
@@ -184,9 +183,9 @@ public class ScoreBoardTest {
 
     @ParameterizedTest
     @MethodSource("invalidScore")
-    void testUpdateGameInvalidHomeScore(int homeScore) throws AlreadyExistsException, InvalidTeamName {
-        String homeTeam = "homeTeam";
-        String awayTeam = "awayTeam";
+    void testUpdateGameInvalidHomeScore(int homeScore) throws AlreadyExistsException, InvalidTeamNameException {
+        String homeTeam = "HomeTeam";
+        String awayTeam = "AwayTeam";
         int awayScore = 2;
         scoreBoard.startGame(homeTeam, awayTeam);
 
@@ -198,9 +197,9 @@ public class ScoreBoardTest {
 
     @ParameterizedTest
     @MethodSource("invalidScore")
-    void testUpdateGameInvalidAwayScore(int awayScore) throws AlreadyExistsException, InvalidTeamName {
-        String homeTeam = "homeTeam";
-        String awayTeam = "awayTeam";
+    void testUpdateGameInvalidAwayScore(int awayScore) throws AlreadyExistsException, InvalidTeamNameException {
+        String homeTeam = "HomeTeam";
+        String awayTeam = "AwayTeam";
         int homeScore = 1;
         scoreBoard.startGame(homeTeam, awayTeam);
 
@@ -211,7 +210,7 @@ public class ScoreBoardTest {
     }
 
     @Test
-    void testGetSummaryOfTotalScoreGames() throws AlreadyExistsException, InvalidTeamName, InvalidScoreException, DoesNotExistsException {
+    void testGetSummaryOfTotalScoreGames() throws AlreadyExistsException, InvalidTeamNameException, InvalidScoreException, DoesNotExistsException {
         scoreBoard.startGame("Uruguay", "Italy");
         scoreBoard.startGame("Spain", "Brazil");
         scoreBoard.startGame("Mexico", "Canada");
@@ -233,13 +232,12 @@ public class ScoreBoardTest {
                 createGame("Argentina", 3, "Australia", 1),
                 createGame("Germany", 2, "France", 2)
         );
-        assertEquals(expectedGames, result);
+        assertEquals(expectedGames.size(), result.size());
+        assertTrue(expectedGames.containsAll(result));
+        assertTrue(result.containsAll(expectedGames));
     }
 
     private Game createGame(String homeTeam, int homeScore, String awayTeam, int awayScore) {
-        Game expectedGame = new Game(homeTeam, awayTeam);
-        expectedGame.setHomeScore(homeScore);
-        expectedGame.setAwayScore(awayScore);
-        return expectedGame;
+        return new Game(homeTeam, awayTeam, homeScore, awayScore);
     }
 }
